@@ -4,22 +4,24 @@ public class Matrix
 {
 	/** The double array that contains all the data in the Matrix object */
 	private double[] rawData;
-	private int width, height, depth;
+	private int rows, cols;
 	
-	public Matrix(int x, int y, int z)
+	public Matrix(int rows, int cols)
 	{
-		if(x < 1) { x = 1; } width = x;
-		if(y < 1) { y = 1; } height = y;
-		if(z < 1) { z = 1; } depth = z;
+		if(rows < 1) { rows = 1; } this.rows = rows;
+		if(cols < 1) { cols = 1; } this.cols = cols;
 		
-		rawData = new double[x * y * z];
+		rawData = new double[rows * cols];
+	}
+	public Matrix(int rows, int cols, double... values)
+	{
+		this(rows, cols);
+		for(int i = 0; i < values.length; i++) { this.setRaw(values[i], i); }
 	}
 	
-	public int getWidth() { return width; }
-	public int getHeight() { return height; }
-	public int getDepth() { return depth; }
-	public int getArea() { return width * height; }
-	public int getVolume() { return width * height * depth; }
+	public int getRows() { return rows; }
+	public int getCols() { return cols; }
+	public int getLength() { return rows * cols; }
 	
 	/** Returns the value in {@link #rawData} at the specified index<p>
 	 * Not recommended for use outside this class and its children */
@@ -30,103 +32,97 @@ public class Matrix
 	
 	/** 
 	 * Returns the value in the Matrix at the specified x, y, and z coordinate 
-	 * @param x Row #
-	 * @param y Column #
-	 * @param z Depth # 
+	 * @param row Row #
+	 * @param col Column #
 	 */
-	public double get(int x, int y, int z)
+	public double get(int row, int col)
 	{
-		return rawData[x + (y * width) + (z * width * height)];
+		return rawData[col + (row * cols)];
 	}
 	/** 
 	 * Sets the double at the specified x, y, and z coordinate to {@code value}
 	 * @param value	New double to set index to
-	 * @param x Row #
-	 * @param y Column #
-	 * @param z Depth # 
+	 * @param row Row #
+	 * @param col Column # 
 	 */
-	public void set(double value, int x, int y, int z)
+	public void set(double value, int row, int col)
 	{
-		rawData[x + (y * width) + (z * width * height)] = value;
+		rawData[col + (row * cols)] = value;
 	}
-	/**
-	 * Returns a 2-D sub-matrix at the specified z-index
-	 * @param index The z-coordinate of the sub-matrix
-	 */
-	public Matrix getFace(int index)
+	
+	public Matrix getRow(int rowNum)
 	{
-		if(index >= this.depth) { throw new IndexOutOfBoundsException("No such z-index in this Matrix : " + index); }
-		Matrix ret = new Matrix(this.width, this.height, 1);
-		for(int i = 0; i < this.getArea(); i++)
+		Matrix ret = new Matrix(1, this.cols);
+		for(int i = 0; i < ret.cols; i++)
 		{
-			ret.setRaw(this.getRaw(i + (this.getArea() * index)), i);
+			ret.setRaw(this.get(rowNum, i), i);
 		}
 		return ret;
 	}
-	/**
-	 * Sets the specified z-index sub-matrix to the passed in Matrix
-	 * @param mat Passed in Matrix
-	 * @param index The z-coordinate of the sub-matrix to set to mat
-	 */
-	public void setFace(Matrix mat, int index)
+	public Matrix getColumn(int colNum)
 	{
-		if(index >= this.depth) { throw new IndexOutOfBoundsException("No such z-index in this Matrix : " + index); }
-		if(mat.width != this.width) { throw new IllegalArgumentException("Current Matrix width and passed in Matrix width are not equal : " + this.width + " != " +  mat.width); }
-		if(mat.height != this.height) { throw new IllegalArgumentException("Current Matrix height and passed in Matrix height are not equal : " + this.height + " != " +  mat.height); }
-		for(int i = 0; i < this.getArea(); i++)
+		Matrix ret = new Matrix(this.rows, 1);
+		for(int i = 0; i < ret.rows; i++)
 		{
-			this.setRaw(mat.getRaw(i), i + (index * this.getArea()));
+			ret.setRaw(this.get(i, colNum), i);
 		}
+		return ret;
 	}
 	
-	public Matrix addMatrixPage(Matrix addend)
+	public Matrix transpose()
 	{
-		Matrix ret = new Matrix(this.width, this.height, this.depth + 1);
-		for(int i = 0; i < ret.depth - 2; i++) { ret.setFace(this.getFace(i), i); }
-		ret.setFace(addend, ret.depth - 1);
+		Matrix ret = new Matrix(this.rows, this.cols);
+		for(int y = 0; y < this.rows; y++)
+		{
+			for(int x = 0; x < this.cols; x++)
+			{
+				ret.set(this.get(x, y), y, x);
+			}
+		}
+		return ret;
+	}
+	
+	public Matrix toRowVector()
+	{
+		Matrix ret = new Matrix(1, this.rows * this.cols, this.rawData);
+		return ret;
+	}
+	
+	public Matrix toColVector()
+	{
+		Matrix ret = new Matrix(this.rows * this.cols, 1, this.rawData);
 		return ret;
 	}
 	
 	@Override public String toString()
 	{
-		return "Matrix[" + width + "x" + height + "x" + depth + "]";
+		return "Matrix[" + rows + "x" + cols + "]";
 	}
 	public String toDataString()
 	{
 		String ret = "Matrix[";
-		int index = 0;
-		for(int z = 0; z < depth; z++)
+		for(int y = 0; y < rows; y++)
 		{
-			for(int y = 0; y < height; y++)
+			for(int x = 0; x < cols; x++)
 			{
-				for(int x = 0; x < width; x++)
-				{
-					if(x != 0) { ret += ", "; }
-					ret += this.getRaw(index);
-					index++;
-				}
-				ret += ";  ";
+				if(x != 0) { ret += ", "; }
+				ret += this.get(y, x);
 			}
-			ret += "]   ";
+			ret += ";   ";
 		}
-		return ret;
+		return ret += "]";
 	}
 	
-	
-	
-	public static Matrix meanMatrix(Matrix... matrices)
+	@Override public boolean equals(Object obj)
 	{
-		Matrix ret = new Matrix(matrices[0].width, matrices[0].height, matrices[0].depth);
-		for(int i = 0; i < matrices[0].getVolume(); i++)
+		Matrix mat = (Matrix)obj;
+		
+		if(this.rows != mat.rows) { return false; }
+		if(this.cols != mat.cols) { return false; }
+		for(int i = 0; i < this.getLength(); i++)
 		{
-			double mean = 0;
-			for(int j = 0; j < matrices.length; j++)
-			{
-				mean += matrices[j].getRaw(i);
-			}
-			mean /= matrices.length;
-			ret.setRaw(mean, i);
+			if(this.rawData[i] != mat.rawData[i]) { return false; }
 		}
-		return ret;
+		return true;
 	}
 }

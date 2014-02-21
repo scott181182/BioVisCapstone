@@ -1,25 +1,44 @@
 package BFS.biovis;
 
+import BFS.biovis.data.EigenMath;
 import BFS.biovis.data.Matrix;
+import BFS.biovis.data.MatrixMath;
 import BFS.biovis.graphics.SimpleGraphics;
 import BFS.biovis.io.AdjMatrixInput;
 import BFS.biovis.io.MatrixImageIO;
+import BFS.biovis.io.MatrixOutput;
 
 public class Main
 {
 
 	public static void main(String[] args) 
-	{
+	{	
+		Matrix avgFile = AdjMatrixInput.loadMatrixFrom("data/output/averageMatrix.txt");
+		
+		Matrix[] matrices = new Matrix[5 * 4];
+		Matrix[] diffMatrices = new Matrix[5 * 4];
 		for(int i = 1; i <= 5; i++)
 		{
-			Matrix mat11 = AdjMatrixInput.loadMatrix(i, 1);
-			Matrix mat12 = AdjMatrixInput.loadMatrix(i, 2);
-			Matrix mat13 = AdjMatrixInput.loadMatrix(i, 3);
-			Matrix mat14 = AdjMatrixInput.loadMatrix(i, 4);
-			Matrix mat1mean = Matrix.meanMatrix(mat11, mat12, mat13, mat14);
-			//SimpleGraphics.displayMatrixImage(mat1mean, 4, false);
-			MatrixImageIO.outputImage(SimpleGraphics.getMatrixAsImage(mat1mean, 4, false), "subjectData-mean-" + i);
+			for(int j = 1; j <= 4; j++)
+			{
+				Matrix mat = AdjMatrixInput.loadMatrix(i, j);
+				matrices[((i - 1) * 4) + (j - 1)] = mat;
+				diffMatrices[((i - 1) * 4) + (j - 1)] = MatrixMath.diffMatrix(avgFile, mat);
+			}
 		}
+
+		SimpleGraphics.displayMatrixImageWithControls(avgFile, 4, false);
+		
+		/* Matrix covar = new Matrix(167, 167);
+		for(int i = 0; i < diffMatrices.length; i++)
+		{
+			Matrix cross = MatrixMath.crossProduct(diffMatrices[i], diffMatrices[i].transpose());
+			covar = MatrixMath.addMatrix(covar, cross);
+		}
+		MatrixMath.dotProduct((1d / matrices.length), covar);
+		
+		MatrixOutput.saveMatrix(covar, "covarianceMatrix");
+		SimpleGraphics.displayMatrixImage(covar, 4, false); */
 	}
 
 }

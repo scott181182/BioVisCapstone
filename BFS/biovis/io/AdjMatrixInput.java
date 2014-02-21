@@ -12,12 +12,17 @@ public class AdjMatrixInput
 	
 	public static Matrix loadMatrix(int patientNum, int scanNum)
 	{
-		Matrix ret = new Matrix(167, 167, 1);
+		return loadMatrixFrom("data/subjectData/example" + patientNum + "_" + scanNum + "_adjacency_matrix_pcc.txt");
+	}
+	
+	public static Matrix loadMatrixFrom(String filename)
+	{
+		Matrix ret = new Matrix(167, 167);
 		
 		Scanner scan = null;
 		try
 		{
-			scan = new Scanner(new File("data/subjectData/example" + patientNum + "_" + scanNum + "_adjacency_matrix_pcc.txt"));
+			scan = new Scanner(new File(filename));
 			int index = 0;
 			while(scan.hasNext())
 			{

@@ -29,14 +29,14 @@ public final class SimpleGraphics
 	
 	public static BufferedImage getMatrixAsImage(Matrix mat, int factor, boolean inColor)
 	{
-		BufferedImage img = new BufferedImage(mat.getWidth() * factor, mat.getHeight() * factor, BufferedImage.TYPE_INT_RGB);
+		BufferedImage img = new BufferedImage(mat.getCols() * factor, mat.getRows() * factor, BufferedImage.TYPE_INT_RGB);
 		for(int y = 0; y < img.getHeight(); y += factor)
 		{
 			for(int x = 0; x < img.getWidth(); x += factor)
 			{
 				int color = 0;
-				if(inColor) { color = (int)(((mat.get(x / factor, y / factor, 0)) + 1) * 8388607); }
-				else { color = (int)(((mat.get(x / factor, y / factor, 0)) + 1) * 127); }
+				if(inColor) { color = (int)(((mat.get(x / factor, y / factor)) + 1) * 8388607); }
+				else { color = (int)(((mat.get(x / factor, y / factor)) + 1) * 127); }
 				
 				for(int i = 0; i < factor; i++)
 				{
@@ -57,6 +57,7 @@ public final class SimpleGraphics
 		imgLabel.setBounds(0, 0, img.getWidth(), img.getHeight());
 		return imgLabel;
 	}
+	
 	public static JFrame displayMatrixImage(Matrix mat, int factor, boolean inColor)
 	{
 		JFrame frame = initFrame(inColor ? "Greyscale Matrix" : "Color Matrix");
@@ -64,6 +65,22 @@ public final class SimpleGraphics
 		JLabel imgLabel = getMatrixAsLabel(mat, factor, inColor);
 		frame.getContentPane().add(imgLabel);
 
+		frame.setVisible(true);
+		int top = frame.getInsets().top;
+		frame.setVisible(false);
+		frame.setSize(imgLabel.getWidth(), imgLabel.getHeight() + top);
+		frame.setVisible(true);
+		return frame;
+	}
+	public static JFrame displayMatrixImageWithControls(Matrix mat, int factor, boolean inColor)
+	{
+		JFrame frame = initFrame(inColor ? "Greyscale Matrix" : "Color Matrix");
+		if(factor < 1) { factor = 1; }
+		JLabel imgLabel = getMatrixAsLabel(mat, factor, inColor);
+		frame.getContentPane().add(imgLabel);
+
+		frame.addKeyListener(new NaviKeyListener(imgLabel, factor));
+		
 		frame.setVisible(true);
 		int top = frame.getInsets().top;
 		frame.setVisible(false);
@@ -131,16 +148,44 @@ public final class SimpleGraphics
 		private JComponent comp;
 		private JPanel horzPanel, vertPanel;
 		
-		public NaviKeyListener(JComponent component, JPanel horz, JPanel vert, int factor)
+		public NaviKeyListener(JComponent component, int factor)
 		{
 			this.comp = component;
 			this.factor = factor;
+		}
+		public NaviKeyListener(JComponent component, JPanel horz, JPanel vert, int factor)
+		{
+			this(component, factor);
 			this.horzPanel = horz;
 			this.vertPanel = vert;
 		}
 		
 		@Override public void keyPressed(KeyEvent e) 
-		{  
+		{
+			Rectangle bounds = comp.getBounds();
+			if(horzPanel != null && vertPanel != null)
+			{
+				this.keyPressedInterface(e);
+				return;
+			}
+			switch(e.getKeyCode())
+			{
+				case KeyEvent.VK_D:
+					comp.setBounds(bounds.x - factor, bounds.y, bounds.width, bounds.height);
+					break;
+				case KeyEvent.VK_S:
+					comp.setBounds(bounds.x, bounds.y - factor, bounds.width, bounds.height);
+					break;
+				case KeyEvent.VK_A:
+					comp.setBounds(bounds.x + factor, bounds.y, bounds.width, bounds.height);
+					break;
+				case KeyEvent.VK_W:
+					comp.setBounds(bounds.x, bounds.y + factor, bounds.width, bounds.height);
+					break;
+			}
+		}
+		public void keyPressedInterface(KeyEvent e)
+		{
 			Rectangle bounds = comp.getBounds();
 			Rectangle hBounds = horzPanel.getBounds();
 			Rectangle vBounds = vertPanel.getBounds();
