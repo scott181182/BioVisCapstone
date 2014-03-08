@@ -35,7 +35,7 @@ public final class SimpleGraphics
 			for(int x = 0; x < img.getWidth(); x += factor)
 			{
 				double raw = mat.get(x / factor, y / factor);
-				int color = (int)((raw + min) * 255 / (max - min));
+				int color = (int)((raw - min) * 255 / (max - min));
 				
 				for(int i = 0; i < factor; i++)
 				{
@@ -44,10 +44,11 @@ public final class SimpleGraphics
 						if(!inColor) { img.setRGB(x + i, y + j, new Color(color, color, color).getRGB()); }
 						else
 						{
-							double var = raw * 2;
-							int red = (int)((double)(1/(0.25 + (var+1)*(var+1))) * ((max - min) / 4));
-							int green = (int)((double)(1/(0.25 + var*var)) * ((max - min) / 4));
-							int blue = (int)((double)(1/(0.25 + (var-1)*(var-1))) * ((max - min) / 4));
+							double var = ((double)color / 64) - 2;
+							
+							int red = (int)((double)(1/(0.25 + (var+1)*(var+1))) * (63));
+							int green = (int)((double)(1/(0.25 + var*var)) * (63));
+							int blue = (int)((double)(1/(0.25 + (var-1)*(var-1))) * (63));
 							Color rgb = new Color(red, green, blue);
 							img.setRGB(x + i, y + j, rgb.getRGB());
 						}

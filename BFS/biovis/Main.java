@@ -55,10 +55,11 @@ public class Main
 			}
 			//SimpleGraphics.displayMatrixImageWithControls(patientDeviation[i], 4, false, patientDeviation[i].min(), patientDeviation[i].max());
 		}
-		SimpleGraphics.displayMatrixImageWithControls(totalDeviation, 4, true, totalDeviation.min(), totalDeviation.max());
+		//SimpleGraphics.displayMatrixImageWithControls(totalDeviation, 4, false, totalDeviation.min(), totalDeviation.max());
 		
-		//EigenMath.getEigenMatrix(matrices);
-		//SimpleGraphics.displayMatrixImageWithControls(avgFile, 4, true);
+		EigenMath.detectMatrix(matrices[6], matrices[0], matrices[1], matrices[3]);
+		EigenMath.detectMatrix(matrices[6], matrices[4], matrices[5], matrices[7]);
+		//SimpleGraphics.displayMatrixImageWithControls(eigenVector, 4, false, eigenVector.min(), eigenVector.max());
 		
 		timer.stop();
 		System.out.println("[Main] Took " + timer.getTime(Timer.MILLISECONDS));

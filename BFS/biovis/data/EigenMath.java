@@ -65,11 +65,10 @@ public class EigenMath
 	
 	
 	
-	public static Matrix getEigenMatrix(Matrix... matrices)
+	public static Matrix getEigenVectors(Matrix... matrices)
 	{
 		Main.Timer t = new Main.Timer();
 		t.start();
-		Matrix ret = new Matrix(matrices[0].getRows(), matrices[0].getCols());
 		
 		//Matrix avgVector = getVectors(MatrixMath.meanMatrix(matrices));
 		Matrix vectors = getVectors(matrices);
@@ -114,7 +113,36 @@ public class EigenMath
 		}
 		
 		t.stop();
-		System.out.println("[EigenMath] Took " + t.getTime(Main.Timer.MILLISECONDS));
+		//System.out.println("[EigenMath] Took " + t.getTime(Main.Timer.MILLISECONDS));
+		return eigenVectors;
+	}
+	
+	public static double detectMatrix(Matrix image, Matrix... compare)
+	{
+		Matrix vectors = getVectors(compare);
+		Matrix avgVector = getVectors(MatrixMath.meanMatrix(compare));
+		Matrix diffVectors = getDiffVectors(avgVector, vectors);
+		Matrix eigenVectors = getEigenVectors(compare);
+		Matrix omegas = new Matrix(eigenVectors.getCols(), eigenVectors.getCols());
+		for(int i = 0; i < omegas.getCols(); i++)
+		{
+			Matrix temp = MatrixMath.dotProduct(eigenVectors.transpose(), diffVectors.getColumn(i));
+			omegas.setColumn(temp, i);
+		}
+		
+		Matrix diff = MatrixMath.diffMatrix(getVectors(image), avgVector);
+		Matrix omega = MatrixMath.dotProduct(eigenVectors.transpose(), diff);
+		
+		double ret = 0, theta = 0, euc = 1000000000;
+		double[] dists = new double[omegas.getCols()];
+		for(int i = 0; i < dists.length; i++)
+		{
+			dists[i] = MatrixMath.euclidDistance(omega, omegas.getColumn(i));
+			euc = dists[i] < euc ? dists[i] : euc;
+			//System.out.println("[" + i + "] " + dists[i]);
+		}
+		System.out.println("[Final] " + euc);
+
 		return ret;
 	}
 }

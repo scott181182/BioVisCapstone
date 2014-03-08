@@ -29,7 +29,7 @@ public final class MatrixMath
 	{
 		if(fromMatrix.getCols() != toMatrix.getCols()) { throw new IllegalArgumentException("Matrix widths don't match"); }
 		if(fromMatrix.getRows() != toMatrix.getRows()) { throw new IllegalArgumentException("Matrix heights don't match"); }
-		Matrix ret = new Matrix(fromMatrix.getCols(), fromMatrix.getRows());
+		Matrix ret = new Matrix(fromMatrix.getRows(), fromMatrix.getCols());
 		for(int i = 0; i < fromMatrix.getLength(); i++)
 		{
 			ret.setRaw((fromMatrix.getRaw(i) - toMatrix.getRaw(i)), i);
@@ -64,6 +64,7 @@ public final class MatrixMath
 	
 	public static Matrix dotProduct(Matrix mat1, Matrix mat2)
 	{
+		if(mat1.getCols() != mat2.getRows()) { throw new IllegalArgumentException("Matrix dimensions aren't correct"); }
 		Matrix ret = new Matrix(mat1.getRows(), mat2.getCols());
 		for(int i = 0; i < mat1.getRows(); i++)
 		{
@@ -110,5 +111,17 @@ public final class MatrixMath
 			ret.setRaw(value + ret.getRaw(i), i);
 		}
 		return ret;
+	}
+	
+	public static double euclidDistance(Matrix mat1, Matrix mat2)
+	{
+		if(mat1.getCols() != mat2.getCols()) { throw new IllegalArgumentException("Matrix widths don't match"); }
+		if(mat1.getRows() != mat2.getRows()) { throw new IllegalArgumentException("Matrix heights don't match"); }
+		double ret = 0;
+		for(int i = 0; i < mat1.getLength(); i++)
+		{
+			ret += ((mat1.getRaw(i) - mat2.getRaw(i)) * (mat1.getRaw(i) - mat2.getRaw(i)));
+		}
+		return Math.sqrt(ret);
 	}
 }

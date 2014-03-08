@@ -100,6 +100,10 @@ public class Matrix
 		}
 		return ret;
 	}
+	public void setRow(Matrix row, int rowNum)
+	{
+		for(int i = 0; i < row.cols; i++) { this.set(row.getRaw(i), rowNum, i); }
+	}
 	public Matrix getColumn(int colNum)
 	{
 		Matrix ret = new Matrix(this.rows, 1);
@@ -108,6 +112,10 @@ public class Matrix
 			ret.setRaw(this.get(i, colNum), i);
 		}
 		return ret;
+	}
+	public void setColumn(Matrix col, int colNum)
+	{
+		for(int i = 0; i < col.rows; i++) { this.set(col.getRaw(i), i, colNum); }
 	}
 	
 	public void makeTriangular()
@@ -123,12 +131,12 @@ public class Matrix
 	
 	public Matrix transpose()
 	{
-		Matrix ret = new Matrix(this.rows, this.cols);
-		for(int y = 0; y < this.rows; y++)
+		Matrix ret = new Matrix(this.cols, this.rows);
+		for(int i = 0; i < this.rows; i++)
 		{
-			for(int x = 0; x < this.cols; x++)
+			for(int j = 0; j < this.cols; j++)
 			{
-				ret.set(this.get(x, y), y, x);
+				ret.set(this.get(i, j), j, i);
 			}
 		}
 		return ret;
