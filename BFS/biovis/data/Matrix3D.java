@@ -2,64 +2,77 @@ package BFS.biovis.data;
 
 public class Matrix3D
 {
-	/** The double array that contains all the data in the Matrix object */
-	private double[] rawData;
-	private int width, height, depth;
+	public static final int ROW = 1, TOP = 4;
+	public static final int COLUMN = 2, SIDE = 5;
+	public static final int BEAM = 3, FRONT = 6;
 	
-	public Matrix3D(int x, int y, int z)
+	/** The double array that contains all the data in the Matrix object */
+	private Matrix[] pages;
+	private int rows, cols, beams;
+	
+	public Matrix3D(int rows, int cols, int beams)
 	{
-		if(x < 1) { x = 1; } width = x;
-		if(y < 1) { y = 1; } height = y;
-		if(z < 1) { z = 1; } depth = z;
+		if(rows < 1) { rows = 1; } this.rows = rows;
+		if(cols < 1) { cols = 1; } this.cols = cols;
+		if(beams < 1) { beams = 1; } this.beams = beams;
 		
-		rawData = new double[x * y * z];
+		pages = new Matrix[beams];
+		for(int i = 0; i < pages.length; i++) { pages[i] = new Matrix(rows, cols); }
 	}
 	
-	public int getWidth() { return width; }
-	public int getHeight() { return height; }
-	public int getDepth() { return depth; }
-	public int getArea() { return width * height; }
-	public int getVolume() { return width * height * depth; }
-	
-	/** Returns the value in {@link #rawData} at the specified index<p>
-	 * Not recommended for use outside this class and its children */
-	public double getRaw(int index) { return rawData[index]; }
-	/** Sets the index in {@link #rawData} to the specified value<p>
-	 * Not recommended for use outside this class and its children */
-	public void setRaw(double value, int index) { rawData[index] = value; }
+	public int getRows() { return rows; }
+	public int getCols() { return cols; }
+	public int getBeams() { return beams; }
+	public int getAreaFront() { return rows * cols; }
+	public int getAreaSide() { return rows * beams; }
+	public int getAreaTop() { return cols * beams; }
+	public int getVolume() { return rows * cols * beams; }
+
+//	/** Returns the value in {@link #rawData} at the specified index<p>
+//	 * Not recommended for use outside this class and its children */
+//	public double getRaw(int index) { return rawData[index]; }
+//	/** Sets the index in {@link #rawData} to the specified value<p>
+//	 * Not recommended for use outside this class and its children */
+//	public void setRaw(double value, int index) { rawData[index] = value; }
 	
 	/** 
 	 * Returns the value in the Matrix at the specified x, y, and z coordinate 
-	 * @param x Row #
-	 * @param y Column #
-	 * @param z Depth # 
+	 * @param row Row #
+	 * @param col Column #
+	 * @param beam Beam # 
 	 */
-	public double get(int x, int y, int z)
+	public double get(int row, int col, int beam)
 	{
-		return rawData[x + (y * width) + (z * width * height)];
+		return pages[beam].get(row, col);
 	}
 	/** 
 	 * Sets the double at the specified x, y, and z coordinate to {@code value}
-	 * @param value	New double to set index to
-	 * @param x Row #
-	 * @param y Column #
-	 * @param z Depth # 
+	 * @param value	New double to set index to 
+	 * @param row Row #
+	 * @param col Column #
+	 * @param beam Beam # 
 	 */
-	public void set(double value, int x, int y, int z)
+	public void set(double value, int row, int col, int beam)
 	{
-		rawData[x + (y * width) + (z * width * height)] = value;
+		pages[beam].set(value, row, col);
 	}
 	/**
 	 * Returns a 2-D sub-matrix at the specified z-index
 	 * @param index The z-coordinate of the sub-matrix
+	 * @param face The face index, either FRONT, SIDE, or TOP 
 	 */
-	public Matrix getFace(int index)
+	public Matrix getFace(int index, int face)
 	{
-		if(index >= this.depth) { throw new IndexOutOfBoundsException("No such z-index in this Matrix : " + index); }
-		Matrix ret = new Matrix(this.width, this.height);
-		for(int i = 0; i < this.getArea(); i++)
+		int r = face == TOP ? this.beams : this.rows;
+		int c = face == SIDE ? this.beams : this.cols;
+		Matrix ret = new Matrix(r, c);
+		for(int i = 0; i < r; i++)
 		{
-			ret.setRaw(this.getRaw(i + (this.getArea() * index)), i);
+			for(int j = 0; j < c; j++)
+			{
+				double value = this.get(face == TOP ? index : i, face == SIDE ? index : j, face == FRONT ? index : face == SIDE ? j : i);
+				ret.set(value, i, j);
+			}
 		}
 		return ret;
 	}
@@ -68,66 +81,48 @@ public class Matrix3D
 	 * @param mat Passed in Matrix
 	 * @param index The z-coordinate of the sub-matrix to set to mat
 	 */
-	public void setFace(Matrix mat, int index)
+	public void setFace(Matrix mat, int index, int face)
 	{
-		if(index >= this.depth) { throw new IndexOutOfBoundsException("No such z-index in this Matrix : " + index); }
-		if(mat.getCols() != this.width) { throw new IllegalArgumentException("Current Matrix width and passed in Matrix width are not equal : " + this.width + " != " +  mat.getCols()); }
-		if(mat.getRows() != this.height) { throw new IllegalArgumentException("Current Matrix height and passed in Matrix height are not equal : " + this.height + " != " +  mat.getRows()); }
-		for(int i = 0; i < this.getArea(); i++)
+		int r = face == TOP ? this.beams : this.rows;
+		int c = face == SIDE ? this.beams : this.cols;
+		for(int i = 0; i < r; i++)
 		{
-			this.setRaw(mat.getRaw(i), i + (index * this.getArea()));
+			for(int j = 0; j < c; j++)
+			{
+				this.set(mat.get(i, j), face == TOP ? index : i, face == SIDE ? index : j, face == FRONT ? index : face == SIDE ? j : i);
+			}
 		}
 	}
 	
-	public Matrix3D addMatrixPage(Matrix addend)
+	public Matrix3D addPage(Matrix addend)
 	{
-		Matrix3D ret = new Matrix3D(this.width, this.height, this.depth + 1);
-		for(int i = 0; i < ret.depth - 2; i++) { ret.setFace(this.getFace(i), i); }
-		ret.setFace(addend, ret.depth - 1);
+		Matrix3D ret = new Matrix3D(this.rows, this.cols, this.beams + 1);
+		for(int i = 0; i < ret.beams - 2; i++) { ret.setFace(this.getFace(i, Matrix3D.FRONT), i, Matrix3D.FRONT); }
+		ret.setFace(addend, ret.beams - 1, Matrix3D.FRONT);
 		return ret;
 	}
 	
-	public Matrix getRow(int yIndex, int  zIndex)
+	public Matrix getRow(int row, int  beam)
 	{
-		Matrix ret = new Matrix(this.width, 1);
-		for(int i = 0; i < this.width; i++)
+		Matrix ret = new Matrix(this.cols, 1);
+		for(int i = 0; i < ret.getCols(); i++)
 		{
-			ret.setRaw(this.getRaw(i + (yIndex * this.height + zIndex * this.depth)), i);
+			ret.setRaw(this.get(row, i, beam), i);
 		}
 		return ret;
 	}
-	public Matrix getColumn(int xIndex, int  zIndex)
+	public Matrix getColumn(int col, int  beam)
 	{
-		Matrix ret = new Matrix(1, this.height);
-		for(int i = 0; i < this.height; i++)
+		Matrix ret = new Matrix(1, this.rows);
+		for(int i = 0; i < ret.getRows(); i++)
 		{
-			ret.setRaw(this.getRaw(xIndex * this.width + i * this.height + zIndex * this.depth), i);
+			ret.setRaw(this.get(i, col, beam), i);
 		}
 		return ret;
 	}
 	
 	@Override public String toString()
 	{
-		return "Matrix[" + width + "x" + height + "x" + depth + "]";
-	}
-	public String toDataString()
-	{
-		String ret = "Matrix[";
-		int index = 0;
-		for(int z = 0; z < depth; z++)
-		{
-			for(int y = 0; y < height; y++)
-			{
-				for(int x = 0; x < width; x++)
-				{
-					if(x != 0) { ret += ", "; }
-					ret += this.getRaw(index);
-					index++;
-				}
-				ret += ";  ";
-			}
-			ret += "]   ";
-		}
-		return ret;
+		return "Matrix[" + rows + "x" + cols + "x" + beams + "]";
 	}
 }

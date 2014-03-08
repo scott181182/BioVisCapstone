@@ -27,42 +27,49 @@ public final class SimpleGraphics
 		return ret;
 	}
 	
-	public static BufferedImage getMatrixAsImage(Matrix mat, int factor, boolean inColor)
+	public static BufferedImage getMatrixAsImage(Matrix mat, int factor, boolean inColor, double min, double max)
 	{
 		BufferedImage img = new BufferedImage(mat.getCols() * factor, mat.getRows() * factor, BufferedImage.TYPE_INT_RGB);
 		for(int y = 0; y < img.getHeight(); y += factor)
 		{
 			for(int x = 0; x < img.getWidth(); x += factor)
 			{
-				int color = 0;
-				if(inColor) { color = (int)(((mat.get(x / factor, y / factor)) + 1) * 8388607); }
-				else { color = (int)(((mat.get(x / factor, y / factor)) + 1) * 127); }
+				double raw = mat.get(x / factor, y / factor);
+				int color = (int)((raw + min) * 255 / (max - min));
 				
 				for(int i = 0; i < factor; i++)
 				{
 					for(int j = 0; j < factor; j++)
 					{
-						if(inColor) { img.setRGB(x + i, y + j, color); }
-						else { img.setRGB(x + i, y + j, (color | color << 8 | color << 16)); }
+						if(!inColor) { img.setRGB(x + i, y + j, new Color(color, color, color).getRGB()); }
+						else
+						{
+							double var = raw * 2;
+							int red = (int)((double)(1/(0.25 + (var+1)*(var+1))) * ((max - min) / 4));
+							int green = (int)((double)(1/(0.25 + var*var)) * ((max - min) / 4));
+							int blue = (int)((double)(1/(0.25 + (var-1)*(var-1))) * ((max - min) / 4));
+							Color rgb = new Color(red, green, blue);
+							img.setRGB(x + i, y + j, rgb.getRGB());
+						}
 					}
 				}
 			}
 		}
 		return img;
 	}
-	public static JLabel getMatrixAsLabel(Matrix mat, int factor, boolean inColor)
+	public static JLabel getMatrixAsLabel(Matrix mat, int factor, boolean inColor, double min, double max)
 	{
-		BufferedImage img = getMatrixAsImage(mat, factor, inColor);
+		BufferedImage img = getMatrixAsImage(mat, factor, inColor, min, max);
 		JLabel imgLabel = new JLabel(new ImageIcon(img));
 		imgLabel.setBounds(0, 0, img.getWidth(), img.getHeight());
 		return imgLabel;
 	}
 	
-	public static JFrame displayMatrixImage(Matrix mat, int factor, boolean inColor)
+	public static JFrame displayMatrixImage(Matrix mat, int factor, boolean inColor, double min, double max)
 	{
 		JFrame frame = initFrame(inColor ? "Greyscale Matrix" : "Color Matrix");
 		if(factor < 1) { factor = 1; }
-		JLabel imgLabel = getMatrixAsLabel(mat, factor, inColor);
+		JLabel imgLabel = getMatrixAsLabel(mat, factor, inColor, min, max);
 		frame.getContentPane().add(imgLabel);
 
 		frame.setVisible(true);
@@ -72,11 +79,11 @@ public final class SimpleGraphics
 		frame.setVisible(true);
 		return frame;
 	}
-	public static JFrame displayMatrixImageWithControls(Matrix mat, int factor, boolean inColor)
+	public static JFrame displayMatrixImageWithControls(Matrix mat, int factor, boolean inColor, double min, double max)
 	{
 		JFrame frame = initFrame(inColor ? "Greyscale Matrix" : "Color Matrix");
 		if(factor < 1) { factor = 1; }
-		JLabel imgLabel = getMatrixAsLabel(mat, factor, inColor);
+		JLabel imgLabel = getMatrixAsLabel(mat, factor, inColor, min, max);
 		frame.getContentPane().add(imgLabel);
 
 		frame.addKeyListener(new NaviKeyListener(imgLabel, factor));
@@ -88,11 +95,11 @@ public final class SimpleGraphics
 		frame.setVisible(true);
 		return frame;
 	}
-	public static JFrame displayMatrixImageWithInterface(Matrix mat, int factor, boolean inColor)
+	public static JFrame displayMatrixImageWithInterface(Matrix mat, int factor, boolean inColor, int min, int max)
 	{
 		JFrame frame = initFrame(inColor ? "Greyscale Matrix" : "Color Matrix");
 		if(factor < 25) { factor = 25; }
-		JLabel imgLabel = getMatrixAsLabel(mat, factor, inColor);
+		JLabel imgLabel = getMatrixAsLabel(mat, factor, inColor, min, max);
 		frame.getContentPane().add(imgLabel);
 		imgLabel.setBounds(factor, factor, imgLabel.getWidth(), imgLabel.getHeight());
 		

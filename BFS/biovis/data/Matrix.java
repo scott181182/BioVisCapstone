@@ -18,10 +18,51 @@ public class Matrix
 		this(rows, cols);
 		for(int i = 0; i < values.length; i++) { this.setRaw(values[i], i); }
 	}
+	public Matrix(double[][] matrixArray)
+	{
+		rows = matrixArray.length;
+		cols = matrixArray[0].length;
+		rawData = new double[rows * cols];
+		int index = 0;
+		for(int i = 0; i < rows; i ++)
+		{
+			for(int j = 0; j < cols; j++)
+			{
+				rawData[index] = matrixArray[i][j];
+				index++;
+			}
+		}
+	}
 	
 	public int getRows() { return rows; }
 	public int getCols() { return cols; }
 	public int getLength() { return rows * cols; }
+	
+	public boolean isSquare() { return rows == cols; }
+	public boolean isSymmetric()
+	{
+		for(int i = 0; i < rows; i++)
+		{
+			for(int j = 0; j < cols; j++)
+			{
+				if(get(i, j) != get(j, i)) { return false; }
+			}
+		}
+		return true;
+	}
+	public boolean isTriangular()
+	{
+		boolean isUpper = true, isLower = true;
+		for(int i = 0; i < rows; i++)
+		{
+			for(int j = 0; j < cols; j++)
+			{
+				if((i > j) && get(i, j) != 0) { isLower = false; }
+				if((i < j) && get(i, j) != 0) { isUpper = false; }
+			}
+		}
+		return isUpper || isLower;
+	}
 	
 	/** Returns the value in {@link #rawData} at the specified index<p>
 	 * Not recommended for use outside this class and its children */
@@ -69,6 +110,17 @@ public class Matrix
 		return ret;
 	}
 	
+	public void makeTriangular()
+	{
+		for(int i = 0; i < rows; i++)
+		{
+			for(int j = 0; j < cols; j++)
+			{
+				if(i < j) { set(0, i, j); }
+			}
+		}
+	}
+	
 	public Matrix transpose()
 	{
 		Matrix ret = new Matrix(this.rows, this.cols);
@@ -81,6 +133,135 @@ public class Matrix
 		}
 		return ret;
 	}
+
+	public double determinant()
+	{
+		if(!isSquare()) { throw new IllegalArgumentException("Matrix must be square"); }
+		double ret = 0;
+		//System.out.println("Finding determinant...");
+		
+		if(rows == 2) { ret = getRaw(0) * getRaw(3) - getRaw(1) * getRaw(2); return ret; }
+		if(isTriangular())
+		{
+			ret = 1;
+			for(int i = 0; i < rows; i++)
+			{
+				ret *= get(i, i);
+			}
+			return ret;
+		}
+		if(rows <= 5)
+		{
+			for(int i = 0; i < cols; i++)
+			{
+				Matrix sub = new Matrix(rows - 1, cols - 1);
+				int index = 0;
+				for(int row = 0; row < rows; row++)
+				{
+					for(int col = 0; col < cols; col++)
+					{
+						if(row == 1 || col == i) { continue; }
+						sub.setRaw(this.get(row, col), index);
+						index++;
+					}
+				}
+				index = 0;
+				
+				ret += sub.determinant() * this.get(1, i) * (i % 2 == 0 ? -1 : 1);
+				//if(rows > 11) { System.out.println("[Rows:" + rows + "]\t[Col:" + i + "]"); }
+			}
+			return ret;
+		}
+		return new LUDecomposition(this).det();
+	}
+	
+	public double trace()
+	{
+		if(!isSquare()) { throw new IllegalArgumentException("Matrix must be square"); }
+		double ret = 0;
+		for(int i = 0; i < rows; i++)
+		{
+			ret += get(i, i);
+		}
+		return ret;
+	}
+	
+	public double sum()
+	{
+		double ret = 0;
+		for(int i = 0; i < this.getLength(); i++) { ret += rawData[i]; }
+		return ret;
+	}
+	public double min()
+	{
+		double ret = 0;
+		for(int i = 0; i < this.getLength(); i++) { ret = rawData[i] < ret ? rawData[i] : ret; }
+		return ret;
+	}
+	public double max()
+	{
+		double ret = 0;
+		for(int i = 0; i < this.getLength(); i++) { ret = rawData[i] > ret ? rawData[i] : ret; }
+		return ret;
+	}
+	
+	public Matrix submatrix(int startRow, int startCol, int endRow, int endCol)
+	{
+		Matrix ret = new Matrix(endRow - startRow, endCol - startCol);
+		for(int i = 0; i < ret.cols; i++)
+		{
+			for(int j = 0; j < ret.rows; j++)
+			{
+				ret.set(this.get(startRow + j, startCol + i), j, i);
+			}
+		}
+		return ret;
+	}
+	public Matrix submatrix(int[] rows, int startCol, int endCol)
+	{
+		Matrix ret = new Matrix(rows.length, endCol - startCol);
+		int index = 0;
+		for(int i = 0; i < ret.cols; i++)
+		{
+			for(int row : rows)
+			{
+				ret.set(this.get(row, startCol + i), index, i);
+				index++;
+			}
+		}
+		return ret;
+	}
+	public Matrix submatrix(int startRow, int endRow, int[] cols)
+	{
+		Matrix ret = new Matrix(startRow - endRow, cols.length);
+		int index = 0;
+		for(int col : cols)
+		{
+			for(int j = 0; j < ret.rows; j++)
+			{
+				ret.set(this.get(startRow + j, col), j, index);
+				index++;
+			}
+		}
+		return ret;
+	}
+	public Matrix submatrix(int[] rows, int[] cols)
+	{
+		Matrix ret = new Matrix(rows.length, cols.length);
+		int indexi = 0, indexj = 0;
+		for(int row : rows)
+		{
+			for(int col : cols)
+			{
+				ret.set(this.get(row, col), indexi, indexj);
+				indexi++;
+				indexj++;
+			}
+		}
+		return ret;
+	}
+	
+	
 	
 	public Matrix toRowVector()
 	{
@@ -103,14 +284,34 @@ public class Matrix
 		String ret = "Matrix[";
 		for(int y = 0; y < rows; y++)
 		{
+			String temp = "";
 			for(int x = 0; x < cols; x++)
 			{
-				if(x != 0) { ret += ", "; }
-				ret += this.get(y, x);
+				if(x != 0) { temp += ", "; }
+				temp += this.get(y, x);
 			}
-			ret += ";   ";
+			ret += String.format("%s%n", temp);
 		}
 		return ret += "]";
+	}
+	public double[][] toArray()
+	{
+		double[][] ret = new double[rows][cols];
+		for(int i = 0; i < rows; i++)
+		{
+			for(int j = 0; j < cols; j++)
+			{
+				ret[i][j] = this.get(i, j);
+			}
+		}
+		return ret;
+	}
+	public double[] toVectorArray() { return this.rawData; }
+	public int[] toVectorArrayInt() 
+	{ 
+		int[] ret = new int[rawData.length];
+		for(int i = 0; i < rawData.length; i++) { ret[i] = (int)rawData[i]; }
+		return ret;
 	}
 	
 	@Override public boolean equals(Object obj)
@@ -122,6 +323,18 @@ public class Matrix
 		for(int i = 0; i < this.getLength(); i++)
 		{
 			if(this.rawData[i] != mat.rawData[i]) { return false; }
+		}
+		return true;
+	}
+	public boolean equalsMarginal(Object obj, double margin)
+	{
+		Matrix mat = (Matrix)obj;
+		if(this.rows != mat.rows) { return false; }
+		if(this.cols != mat.cols) { return false; }
+		for(int i = 0; i < this.getLength(); i++)
+		{
+			double diff = this.rawData[i] - mat.rawData[i];
+			if((diff > margin) || (diff < -margin)) { return false; }
 		}
 		return true;
 	}

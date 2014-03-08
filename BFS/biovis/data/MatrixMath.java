@@ -36,6 +36,19 @@ public final class MatrixMath
 		}
 		return ret;
 	}
+	
+	public static Matrix identityMatrix(int n)
+	{
+		Matrix ret = new Matrix(n, n);
+		for(int i = 0; i < n; i++)
+		{
+			for(int j = 0; j < n; j++)
+			{
+				ret.set(i == j ? 1 : 0, i, j);
+			}
+		}
+		return ret;
+	}
 
 	public static Matrix addMatrix(Matrix fromMatrix, Matrix toMatrix)
 	{
@@ -49,7 +62,7 @@ public final class MatrixMath
 		return ret;
 	}
 	
-	public static Matrix crossProduct(Matrix mat1, Matrix mat2)
+	public static Matrix dotProduct(Matrix mat1, Matrix mat2)
 	{
 		Matrix ret = new Matrix(mat1.getRows(), mat2.getCols());
 		for(int i = 0; i < mat1.getRows(); i++)
@@ -69,12 +82,22 @@ public final class MatrixMath
 		return ret;
 	}
 	
-	public static Matrix dotProduct(double value, Matrix mat)
+	public static Matrix scalarProduct(double value, Matrix mat)
 	{
 		Matrix ret = mat;
 		for(int i = 0; i < mat.getLength(); i++)
 		{
 			ret.setRaw(value * ret.getRaw(i), i);
+		}
+		return ret;
+	}
+	
+	public static double innerProduct(Matrix mat1, Matrix mat2)
+	{
+		double ret = 0;
+		for(int i = 0; i < mat1.getLength(); i++)
+		{
+			ret += mat1.getRaw(i) * mat2.getRaw(i);
 		}
 		return ret;
 	}

@@ -18,8 +18,8 @@ public class MatrixImageIO
 		catch(IOException ioe) { ioe.printStackTrace(); }
 	}
 	
-	public static void outputImage(Matrix mat, String filename)
+	public static void outputImage(Matrix mat, String filename, double min, double max)
 	{
-		outputImage(SimpleGraphics.getMatrixAsImage(mat, 4, false), filename);
+		outputImage(SimpleGraphics.getMatrixAsImage(mat, 4, false, min, max), filename);
 	}
 }
