@@ -19,6 +19,11 @@ public class Matrix3D
 		pages = new Matrix[beams];
 		for(int i = 0; i < pages.length; i++) { pages[i] = new Matrix(rows, cols); }
 	}
+	public Matrix3D(Matrix... matrices)
+	{
+		this(matrices[0].getRows(), matrices[0].getCols(), matrices.length);
+		for(int i = 0; i < matrices.length; i++) { this.setFace(matrices[i], i, FRONT); }
+	}
 	
 	public int getRows() { return rows; }
 	public int getCols() { return cols; }
@@ -118,6 +123,18 @@ public class Matrix3D
 		{
 			ret.setRaw(this.get(i, col, beam), i);
 		}
+		return ret;
+	}
+	public Matrix getBeamAsRow(int row, int col)
+	{
+		Matrix ret = new Matrix(this.getBeams(), 1);
+		for(int i = 0; i < ret.getLength(); i++) { ret.setRaw(this.get(row, col, i), i); }
+		return ret;
+	}
+	public Matrix getBeamAsCol(int row, int col)
+	{
+		Matrix ret = new Matrix(1, this.getBeams());
+		for(int i = 0; i < ret.getLength(); i++) { ret.setRaw(this.get(row, col, i), i); }
 		return ret;
 	}
 	

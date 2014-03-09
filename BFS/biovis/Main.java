@@ -35,31 +35,21 @@ public class Main
 			patientAvg[i-1] = MatrixMath.meanMatrix(matrices[((i-1)*4) + 0], matrices[((i-1)*4) + 1], matrices[((i-1)*4) + 2], matrices[((i-1)*4) + 3]);
 		}
 		
-		Matrix totalDeviation = new Matrix(167, 167);
 		Matrix[] patientDeviation = new Matrix[5];
 		for(int i = 0; i < 5; i++)
 		{
-			patientDeviation[i] = new Matrix(167, 167);
-			for(int row = 0; row < 167; row++)
-			{
-				for(int col = 0; col < 167; col++)
-				{
-					double diff = 0;
-					diff += Math.abs(diffMatrices[(i * 4) + 0].get(row, col));
-					diff += Math.abs(diffMatrices[(i * 4) + 1].get(row, col));
-					diff += Math.abs(diffMatrices[(i * 4) + 2].get(row, col));
-					diff += Math.abs(diffMatrices[(i * 4) + 3].get(row, col));
-					patientDeviation[i].set(diff, row, col);
-					totalDeviation.set(totalDeviation.get(row, col) + diff, row, col);
-				}
-			}
+			patientDeviation[i] = MatrixMath.matrixDeviation(matrices[(i*4) + 0], matrices[(i*4) + 1], matrices[(i*4) + 2], matrices[(i*4) + 3]);
 			//SimpleGraphics.displayMatrixImageWithControls(patientDeviation[i], 4, false, patientDeviation[i].min(), patientDeviation[i].max());
+			MatrixImageIO.outputImage(patientDeviation[i], "patient#" + i + "-SD", patientDeviation[i].min(), patientDeviation[i].max());
 		}
-		//SimpleGraphics.displayMatrixImageWithControls(totalDeviation, 4, false, totalDeviation.min(), totalDeviation.max());
+		Matrix totalDeviation = MatrixMath.matrixDeviation(matrices);
+		Matrix totalPatientDeviation = MatrixMath.matrixDeviation(patientDeviation);
+		Matrix averageDeviation = MatrixMath.matrixDeviation(patientAvg);
+		MatrixImageIO.outputImage(totalDeviation, "totalSD", totalDeviation.min(), totalDeviation.max());
+		MatrixImageIO.outputImage(totalPatientDeviation, "patientSD-SD", totalPatientDeviation.min(), totalPatientDeviation.max());
+		MatrixImageIO.outputImage(averageDeviation, "averageSD", averageDeviation.min(), averageDeviation.max());
 		
-		EigenMath.detectMatrix(matrices[6], matrices[0], matrices[1], matrices[3]);
-		EigenMath.detectMatrix(matrices[6], matrices[4], matrices[5], matrices[7]);
-		//SimpleGraphics.displayMatrixImageWithControls(eigenVector, 4, false, eigenVector.min(), eigenVector.max());
+		
 		
 		timer.stop();
 		System.out.println("[Main] Took " + timer.getTime(Timer.MILLISECONDS));

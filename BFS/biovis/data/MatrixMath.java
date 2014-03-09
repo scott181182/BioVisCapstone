@@ -124,4 +124,29 @@ public final class MatrixMath
 		}
 		return Math.sqrt(ret);
 	}
+	
+	public static double standardDeviation(double[] data)
+	{
+		double avg = 0, std = 0;;
+		for(int i = 0; i < data.length; i++) { avg += data[i]; }
+		avg /= data.length;
+		double[] diff = new double[data.length];
+		for(int i = 0; i < data.length; i++) { diff[i] = (data[i] - avg) * (data[i] - avg); std += diff[i]; }
+		std /= data.length;
+		return Math.sqrt(std);
+	}
+	public static Matrix matrixDeviation(Matrix... matrices)
+	{
+		Matrix ret = new Matrix(matrices[0].getRows(), matrices[0].getCols());
+		Matrix3D matrix3d = new Matrix3D(matrices);
+		for(int i = 0; i < ret.getRows(); i++)
+		{
+			for(int j = 0; j < ret.getCols(); j++)
+			{
+				double std = standardDeviation(matrix3d.getBeamAsRow(i, j).toVectorArray());
+				ret.set(std, i, j);
+			}
+		}
+		return ret;
+	}
 }

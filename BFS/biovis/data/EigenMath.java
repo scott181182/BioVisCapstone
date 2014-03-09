@@ -67,12 +67,7 @@ public class EigenMath
 	
 	public static Matrix getEigenVectors(Matrix... matrices)
 	{
-		Main.Timer t = new Main.Timer();
-		t.start();
-		
-		//Matrix avgVector = getVectors(MatrixMath.meanMatrix(matrices));
 		Matrix vectors = getVectors(matrices);
-		//Matrix diffVectors = getDiffVectors(avgVector, vectors);
 		Matrix L = innerProducts(vectors);
 
 		EigenvalueDecomposition decomp = new EigenvalueDecomposition(L);
@@ -111,13 +106,10 @@ public class EigenMath
 				eigenVectors.set(temp.get(j, 0), j, i);
 			}
 		}
-		
-		t.stop();
-		//System.out.println("[EigenMath] Took " + t.getTime(Main.Timer.MILLISECONDS));
 		return eigenVectors;
 	}
 	
-	public static double detectMatrix(Matrix image, Matrix... compare)
+	public static double testMatrix(Matrix image, Matrix... compare)
 	{
 		Matrix vectors = getVectors(compare);
 		Matrix avgVector = getVectors(MatrixMath.meanMatrix(compare));
@@ -133,16 +125,20 @@ public class EigenMath
 		Matrix diff = MatrixMath.diffMatrix(getVectors(image), avgVector);
 		Matrix omega = MatrixMath.dotProduct(eigenVectors.transpose(), diff);
 		
-		double ret = 0, theta = 0, euc = 1000000000;
+		double ret = 0;
 		double[] dists = new double[omegas.getCols()];
 		for(int i = 0; i < dists.length; i++)
 		{
 			dists[i] = MatrixMath.euclidDistance(omega, omegas.getColumn(i));
-			euc = dists[i] < euc ? dists[i] : euc;
-			//System.out.println("[" + i + "] " + dists[i]);
+			if(i == 0) { ret = dists[i]; }
+			ret = dists[i] < ret ? dists[i] : ret;
 		}
-		System.out.println("[Final] " + euc);
 
 		return ret;
+	}
+	
+	public static boolean detectMatrix(Matrix image, double threshold, Matrix... matrices)
+	{
+		return testMatrix(image, matrices) < threshold;
 	}
 }
