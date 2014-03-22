@@ -1,5 +1,7 @@
 package BFS.biovis.data;
 
+import java.util.Arrays;
+
 public class Matrix
 {
 	/** The double array that contains all the data in the Matrix object */
@@ -128,6 +130,11 @@ public class Matrix
 			}
 		}
 	}
+	public void normalize()
+	{
+		double max = this.max();
+		for(int i = 0; i < this.getLength(); i++) { this.setRaw(this.getRaw(i) / max, i); }
+	}
 	
 	public Matrix transpose()
 	{
@@ -194,11 +201,26 @@ public class Matrix
 		return ret;
 	}
 	
+	public double magnitude()
+	{
+		double ret = 0;
+		for(int i = 0; i < this.getLength(); i++)
+		{
+			ret += this.getRaw(i) * this.getRaw(i);
+		}
+		return Math.sqrt(ret);
+	}
+	
 	public double sum()
 	{
 		double ret = 0;
 		for(int i = 0; i < this.getLength(); i++) { ret += rawData[i]; }
 		return ret;
+	}
+	public double mean()
+	{
+		double avg = this.sum();
+		return avg / this.getLength();
 	}
 	public double min()
 	{
@@ -289,18 +311,18 @@ public class Matrix
 	}
 	public String toDataString()
 	{
-		String ret = "Matrix[";
+		String ret = "Matrix:";
 		for(int y = 0; y < rows; y++)
 		{
-			String temp = "";
+			String temp = y == 0 ? "[" : "       [";
 			for(int x = 0; x < cols; x++)
 			{
 				if(x != 0) { temp += ", "; }
 				temp += this.get(y, x);
 			}
-			ret += String.format("%s%n", temp);
+			ret += String.format("%s%n", temp + "]");
 		}
-		return ret += "]";
+		return ret;
 	}
 	public double[][] toArray()
 	{
@@ -314,7 +336,7 @@ public class Matrix
 		}
 		return ret;
 	}
-	public double[] toVectorArray() { return this.rawData; }
+	public double[] toVectorArray() { return Arrays.copyOf(this.rawData, this.rawData.length); }
 	public int[] toVectorArrayInt() 
 	{ 
 		int[] ret = new int[rawData.length];
@@ -322,6 +344,10 @@ public class Matrix
 		return ret;
 	}
 	
+	@Override public Object clone()
+	{
+		return new Matrix(rows, cols, rawData);
+	}
 	@Override public boolean equals(Object obj)
 	{
 		Matrix mat = (Matrix)obj;

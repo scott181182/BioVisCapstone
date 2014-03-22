@@ -100,7 +100,7 @@ public class EigenMath
 		Matrix temp = new Matrix(eigenVectorsM.getRows(), 1);
 		for(int i = 0; i < eigenVectorsM.getCols(); i++)
 		{
-			temp = MatrixMath.dotProduct(vectors, eigenVectorsM.getColumn(i));
+			temp = MatrixMath.matrixProduct(vectors, eigenVectorsM.getColumn(i));
 			for(int j = 0; j < temp.getRows(); j++)
 			{
 				eigenVectors.set(temp.get(j, 0), j, i);
@@ -118,12 +118,12 @@ public class EigenMath
 		Matrix omegas = new Matrix(eigenVectors.getCols(), eigenVectors.getCols());
 		for(int i = 0; i < omegas.getCols(); i++)
 		{
-			Matrix temp = MatrixMath.dotProduct(eigenVectors.transpose(), diffVectors.getColumn(i));
+			Matrix temp = MatrixMath.matrixProduct(eigenVectors.transpose(), diffVectors.getColumn(i));
 			omegas.setColumn(temp, i);
 		}
 		
 		Matrix diff = MatrixMath.diffMatrix(getVectors(image), avgVector);
-		Matrix omega = MatrixMath.dotProduct(eigenVectors.transpose(), diff);
+		Matrix omega = MatrixMath.matrixProduct(eigenVectors.transpose(), diff);
 		
 		double ret = 0;
 		double[] dists = new double[omegas.getCols()];

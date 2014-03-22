@@ -34,7 +34,7 @@ public final class SimpleGraphics
 		{
 			for(int x = 0; x < img.getWidth(); x += factor)
 			{
-				double raw = mat.get(x / factor, y / factor);
+				double raw = mat.get(y / factor, x / factor);
 				int color = (int)((raw - min) * 255 / (max - min));
 				
 				for(int i = 0; i < factor; i++)
@@ -80,6 +80,7 @@ public final class SimpleGraphics
 		frame.setVisible(true);
 		return frame;
 	}
+	public static JFrame displayMatrixImageWithControls(Matrix mat, int factor, boolean inColor) { return displayMatrixImageWithControls(mat, factor, inColor, mat.min(), mat.max()); }
 	public static JFrame displayMatrixImageWithControls(Matrix mat, int factor, boolean inColor, double min, double max)
 	{
 		JFrame frame = initFrame(inColor ? "Greyscale Matrix" : "Color Matrix");
